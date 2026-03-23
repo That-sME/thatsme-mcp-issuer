@@ -1,0 +1,108 @@
+name: Deploy thatsme-mcp-issuer
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Test without API key
+        run: |
+          node dist/index.js 2>&1 | grep -q "THATSME_API_KEY is required" && \
+          echo "API key validation works" || exit 1
+
+      - name: Test tools/list (stdio)
+        run: |
+          echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | \
+          THATSME_API_KEY=test timeout 5 node dist/index.js | \
+          grep -q "search_events" && echo "tools/list OK" || exit 1
+
+      - name: Test health endpoint (HTTP mode)
+        run: |
+          MCP_TRANSPORT=http MCP_PORT=3010 THATSME_API_KEY=test \
+          node dist/index.js &
+          sleep 2
+          curl -sf http://localhost:3010/health | grep -q "ok" && \
+          echo "Health OK" || exit 1
+          kill %1 2>/dev/null || true
+
+  publish-npm:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Publish to npm (if version changed)
+        run: |
+          PUBLISHED=$(npm view thatsme-mcp-issuer version 2>/dev/null || echo "0.0.0")
+          LOCAL=$(node -p "require('./package.json').version")
+          if [ "$LOCAL" != "$PUBLISHED" ]; then
+            npm publish --access public --provenance
+            echo "Published thatsme-mcp-issuer@$LOCAL"
+          else
+            echo "Version $LOCAL already published, skipping"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  deploy-remote:
+    needs: [build-and-test, publish-npm]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Sync files to server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.MCP_SERVER_KEY }}
+          ARGS: "-rltgoDzvO --exclude=node_modules --exclude=.git --exclude=src"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.MCP_SERVER_HOST }}
+          REMOTE_USER: ${{ secrets.MCP_SERVER_USER }}
+          TARGET: "/opt/thatsme-mcp/"
+
+      - name: Rebuild and restart container
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.MCP_SERVER_HOST }}
+          username: ${{ secrets.MCP_SERVER_USER }}
+          key: ${{ secrets.MCP_SERVER_KEY }}
+          script: |
+            cd /opt/thatsme-mcp
+            docker compose up -d --build --force-recreate
+            sleep 3
+            curl -sf http://localhost:3010/health || echo "Health check failed"

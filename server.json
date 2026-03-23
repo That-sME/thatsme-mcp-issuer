@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.thatsmeapp/issuer",
+  "description": "Issue digital certificates and query engagement analytics from thatsme — the world's first RewardTech platform.",
+  "repository": {
+    "url": "https://github.com/thatsmeapp/thatsme-mcp-issuer",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "thatsme-mcp-issuer",
+      "version": "1.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "API key for authenticating with the thatsme platform (get yours at app.thatsme.com.br/settings/integrations)",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true,
+          "name": "THATSME_API_KEY"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "transportType": "streamablehttp",
+      "url": "https://mcp.thatsme.com.br/mcp"
+    }
+  ]
+}

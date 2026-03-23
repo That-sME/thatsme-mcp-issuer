@@ -1,0 +1,41 @@
+{
+  "name": "thatsme-mcp-issuer",
+  "version": "1.0.0",
+  "mcpName": "io.github.thatsmeapp/issuer",
+  "description": "MCP server for That's Me issuers — issue certificates and track engagement via AI",
+  "main": "dist/index.js",
+  "bin": {
+    "thatsme-mcp-issuer": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  },
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "thatsme",
+    "certificates",
+    "badges",
+    "rewardtech"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thatsmeapp/thatsme-mcp-issuer"
+  }
+}
