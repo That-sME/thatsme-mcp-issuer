@@ -102,6 +102,14 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      - name: Ensure target directory exists
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.MCP_SERVER_HOST }}
+          username: ${{ secrets.MCP_SERVER_USER }}
+          key: ${{ secrets.MCP_SERVER_KEY }}
+          script: sudo mkdir -p /opt/thatsme-mcp && sudo chown $USER:$USER /opt/thatsme-mcp
+
       - name: Sync files to server
         uses: easingthemes/ssh-deploy@main
         env:
