@@ -49,7 +49,7 @@ export const issueCertificatesTool = {
     }
 
     try {
-      const data = await apiCall<any>('/emissions', {
+      const data = await apiCall<any>('/v1.0/emissions', {
         method: 'POST',
         body: JSON.stringify({
           event_id: args.event_id,
