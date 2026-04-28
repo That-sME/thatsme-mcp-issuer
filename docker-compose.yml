@@ -10,4 +10,5 @@ services:
       - THATSME_API_KEY=${THATSME_API_KEY}
       - MCP_TRANSPORT=http
       - MCP_PORT=3010
+      - MCP_ALLOWED_HOSTS=mcp.thatsme.com.br,localhost,127.0.0.1
     restart: unless-stopped

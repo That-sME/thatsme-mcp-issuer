@@ -55,7 +55,11 @@ async function main() {
     );
     const { randomUUID } = await import('node:crypto');
 
-    const app = createMcpExpressApp();
+    const allowedHosts = (process.env.MCP_ALLOWED_HOSTS ?? 'localhost,127.0.0.1,[::1]')
+      .split(',')
+      .map((h) => h.trim())
+      .filter(Boolean);
+    const app = createMcpExpressApp({ host: '0.0.0.0', allowedHosts });
     const transports: Record<string, InstanceType<typeof StreamableHTTPServerTransport>> = {};
 
     app.post('/mcp', async (req: any, res: any) => {
