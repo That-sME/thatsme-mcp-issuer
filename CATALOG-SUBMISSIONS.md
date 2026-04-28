@@ -59,23 +59,41 @@
 
 ---
 
-## 1. mcp.run — https://mcp.run
+## 1. Official MCP Registry (replaces mcp.run) — https://registry.modelcontextprotocol.io
 
-1. Sign in with GitHub
-2. Visit https://mcp.run/submit (or click "Submit a server")
-3. Fill: name, description (use Long description above), npm URL, GitHub URL
-4. Category: "Business" or "Issuance"
-5. Add tags: credentials, certificates, b2b
-6. Submit
+> **Important**: `mcp.run` was rebranded into `turbomcp.ai` (now an enterprise self-hosted gateway, not a public catalog). The official replacement is the **MCP Registry** at registry.modelcontextprotocol.io, backed by Anthropic, GitHub, PulseMCP, and Microsoft.
 
-## 2. smithery.ai — https://smithery.ai
+Submission is via the `mcp-publisher` CLI tool, not a web form. Repo is already prepared (`package.json` has `mcpName: io.github.thatsmeapp/issuer`, `server.json` filled in). Three commands:
 
+```bash
+# 1. Install the publisher CLI (one-time)
+brew install mcp-publisher
+
+# 2. Authenticate via GitHub device flow (no creepy OAuth scopes)
+cd /Users/bernardo/Desktop/thatsme/thatsme/thatsme-mcp-issuer
+mcp-publisher login github
+
+# 3. Publish
+mcp-publisher publish
+```
+
+Verify with:
+```bash
+curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.thatsmeapp/issuer"
+```
+
+## 2. smithery.ai — https://smithery.ai (OAuth caveat)
+
+> Smithery's GitHub OAuth asks for `gists (write)`, `starring (write)`, and `watching (write)` scopes — broader than a catalog needs. Worst case is auto-stars/auto-watches in your activity feed; private repos are not exposed. Two safer paths:
+> - Skip Smithery entirely (the official Registry above is canonical)
+> - Authorize from a secondary GitHub account, or revoke immediately at https://github.com/settings/applications after they index your server
+
+If you proceed:
 1. Sign in with GitHub
 2. Click "Add a server"
 3. Reference repo URL: https://github.com/thatsmeapp/thatsme-mcp-issuer
 4. Smithery scrapes the README and package.json automatically — verify fields match
-5. Add the long description above as override if scrape is incomplete
-6. Submit for indexing
+5. Submit for indexing
 
 ## 3. pulsemcp.com — https://www.pulsemcp.com
 
