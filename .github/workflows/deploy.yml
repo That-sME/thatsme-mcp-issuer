@@ -135,8 +135,13 @@ jobs:
               sudo cp /opt/thatsme-mcp/nginx.conf /etc/nginx/conf.d/mcp-thatsme.conf
             fi
             sudo nginx -t
-            sudo nginx -s reload
-            echo "nginx vhost installed and reloaded"
+            if sudo systemctl is-active --quiet nginx; then
+              sudo systemctl reload nginx
+              echo "nginx reloaded"
+            else
+              sudo systemctl enable --now nginx
+              echo "nginx started"
+            fi
 
       - name: Rebuild and restart container
         uses: appleboy/ssh-action@v1
