@@ -156,6 +156,11 @@ jobs:
               echo "::warning::.env missing on server — container will refuse to start. Create /opt/thatsme-mcp/.env with THATSME_API_KEY=<key> and re-run."
               exit 0
             fi
-            docker compose up -d --build --force-recreate
+            if docker compose version >/dev/null 2>&1; then
+              DC="docker compose"
+            else
+              DC="docker-compose"
+            fi
+            $DC up -d --build --force-recreate
             sleep 3
             curl -sf http://localhost:3010/health || echo "Health check failed"
