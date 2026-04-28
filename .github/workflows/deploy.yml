@@ -120,6 +120,20 @@ jobs:
           REMOTE_USER: ${{ secrets.MCP_SERVER_USER }}
           TARGET: "/opt/thatsme-mcp/"
 
+      - name: Install nginx vhost (idempotent)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.MCP_SERVER_HOST }}
+          username: ${{ secrets.MCP_SERVER_USER }}
+          key: ${{ secrets.MCP_SERVER_KEY }}
+          script: |
+            set -e
+            sudo cp /opt/thatsme-mcp/nginx.conf /etc/nginx/sites-available/mcp-thatsme
+            sudo ln -sf /etc/nginx/sites-available/mcp-thatsme /etc/nginx/sites-enabled/mcp-thatsme
+            sudo nginx -t
+            sudo nginx -s reload
+            echo "nginx vhost installed and reloaded"
+
       - name: Rebuild and restart container
         uses: appleboy/ssh-action@v1
         with:
@@ -127,7 +141,12 @@ jobs:
           username: ${{ secrets.MCP_SERVER_USER }}
           key: ${{ secrets.MCP_SERVER_KEY }}
           script: |
+            set -e
             cd /opt/thatsme-mcp
+            if [ ! -f .env ]; then
+              echo "::warning::.env missing on server — container will refuse to start. Create /opt/thatsme-mcp/.env with THATSME_API_KEY=<key> and re-run."
+              exit 0
+            fi
             docker compose up -d --build --force-recreate
             sleep 3
             curl -sf http://localhost:3010/health || echo "Health check failed"
