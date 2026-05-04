@@ -7,6 +7,7 @@ import { issueCertificatesTool } from './tools/issue-certificates.js';
 import { getFunnelTool } from './tools/get-funnel.js';
 import { listRecipientsTool } from './tools/list-recipients.js';
 import { exportCsvTool } from './tools/export-csv.js';
+import { validateRetroactiveAchievementTool } from './tools/validate-retroactive-achievement.js';
 
 function registerTools(server: McpServer) {
   server.tool(
@@ -42,6 +43,13 @@ function registerTools(server: McpServer) {
     exportCsvTool.description,
     exportCsvTool.schema,
     exportCsvTool.handler,
+  );
+
+  server.tool(
+    validateRetroactiveAchievementTool.name,
+    validateRetroactiveAchievementTool.description,
+    validateRetroactiveAchievementTool.schema,
+    validateRetroactiveAchievementTool.handler,
   );
 }
 
